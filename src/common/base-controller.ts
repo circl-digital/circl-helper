@@ -27,14 +27,14 @@ export abstract class BaseController {
             if ((rawResponse as APIResponse<T>).message !== undefined || (rawResponse as APIResponse<T>).data !== undefined) {
                 const apiResponse = rawResponse as APIResponse<T>;
                 if (apiResponse.message) {
-                    return { data: null, message: apiResponse.message };
+                    return { message: apiResponse.message, data: null, };
                 }
                 data = apiResponse.data;
             } else {
                 data = rawResponse as T;
             }
 
-            return { data: data, message: 'Ok' };
+            return { message: 'Ok', data: data, };
         } catch (error) {
             this.logError(error);
 

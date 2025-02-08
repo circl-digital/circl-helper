@@ -1,6 +1,4 @@
 export interface APIResponse<T> {
-    statusCode: number;
-    message: string;
-    error: boolean;
+    message?: string;
     data?: T | undefined;
 }

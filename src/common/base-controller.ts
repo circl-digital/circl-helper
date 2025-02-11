@@ -5,6 +5,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { APIResponse } from '../model/api-response';
+import { errorHandler as commonErrorHandler } from './error-handler';
 
 
 export abstract class BaseController {
@@ -17,8 +18,9 @@ export abstract class BaseController {
      * @param context Optional context for logging (usually the method name)
      * @returns Standardized response format
      */
-    protected async handleResponse<T>(
+    protected async buildResponse<T>(
         promiseOrFunction: (() => Promise<APIResponse<T>>) | (() => Promise<T>),
+        onError?: (error: Error) => void | undefined,
     ): Promise<APIResponse<T>> {
         try {
             const rawResponse = await (typeof promiseOrFunction === 'function' ? promiseOrFunction() : promiseOrFunction);
@@ -27,25 +29,21 @@ export abstract class BaseController {
             if ((rawResponse as APIResponse<T>).message !== undefined || (rawResponse as APIResponse<T>).data !== undefined) {
                 const apiResponse = rawResponse as APIResponse<T>;
                 if (apiResponse.message) {
-                    return { message: apiResponse.message, data: null, };
+                    return { statusCode: apiResponse.statusCode, message: apiResponse.message, data: apiResponse.data };
                 }
                 data = apiResponse.data;
             } else {
                 data = rawResponse as T;
             }
 
-            return { message: 'Ok', data: data, };
+            const response: APIResponse<T> = { statusCode: HttpStatus.OK, message: 'Ok' };
+            if (data !== undefined) {
+                response.data = data;
+            }
+            return response;
         } catch (error) {
             this.logError(error);
-
-            if (Object.getPrototypeOf(error)?.constructor?.name === 'HttpException') {
-                throw error;
-            }
-
-            throw new InternalServerErrorException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'Internal server error',
-            });
+            commonErrorHandler(error);
         }
     }
 

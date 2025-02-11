@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.8",
-    "express": "^4.21.2"
+    "@prisma/client": "^6.3.1",
+    "express": "^4.21.2",
+    "prisma": "^6.3.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
